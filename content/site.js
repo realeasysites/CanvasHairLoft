@@ -115,8 +115,8 @@ module.exports = {
 
   social: {
     instagram: 'https://www.instagram.com/canvashairloft',
-    facebook: 'https://www.facebook.com/canvashairloft',
-    facebookPage: 'canvashairloft', // powers the live feed
+    facebook: 'https://www.facebook.com/profile.php?id=100064132389309',
+    facebookPage: 'profile.php?id=100064132389309', // powers the live feed
   },
 
   policies: [], // add [{ title, text }] once the salon confirms its policy
