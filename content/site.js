@@ -85,8 +85,7 @@ module.exports = {
   artistsTitle: 'The artists',
   artistsIntro: 'Each artist books her own chair. Choose someone you love, or let us match you.',
   artists: [
-    { name: 'Nicky', instagram: 'nickycouch_', focus: 'Extensions, including hand-tied sets up to 20 inches', bookUrl: '' },
-    { name: 'Emily Velandry', instagram: 'emilyvelandry', focus: 'Color and cuts', bookUrl: '' },
+    { name: 'Nicky', instagram: 'nickycouch_', focus: 'Owner. Extensions, including hand-tied sets up to 20 inches', bookUrl: '' },
     { name: 'Amanda Bourque', instagram: '', focus: 'Bright blondes, long layered haircuts and pixies', bookUrl: '' },
   ],
 
