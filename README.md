@@ -2,7 +2,7 @@
 
 Built by Real Easy Sites on the **Atelier** template: an editorial, gallery-style layout for hair studios, beauty studios and high-end bakeries.
 
-Node 20 · Express · SQLite. One server serves the site, the request form (with inspiration-photo uploads) and a password-only dashboard at `/admin`.
+Node 22 · Express · SQLite. One server serves the site, the request form (with inspiration-photo uploads) and a password-only dashboard at `/admin`.
 
 ## Run it
 
