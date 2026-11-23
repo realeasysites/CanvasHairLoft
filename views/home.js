@@ -73,7 +73,7 @@ module.exports = function renderHome(site) {
     const href = a.bookUrl || `#request`;
     return `
       <li class="artist">
-        <p class="artist-name">${esc(a.name)}</p>
+        <div class="artist-id"><p class="artist-name">${esc(a.name)}</p>${a.role ? `<p class="artist-role">${esc(a.role)}</p>` : ''}</div>
         <div class="artist-body">
           ${a.focus ? `<p class="artist-focus">${esc(a.focus)}</p>` : ''}
           ${a.instagram ? `<a class="artist-ig" href="https://www.instagram.com/${esc(a.instagram)}" target="_blank" rel="noopener">${icon('ig')}@${esc(a.instagram)}</a>` : ''}
