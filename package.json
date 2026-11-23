@@ -1,0 +1,28 @@
+{
+  "name": "canvas-hair-loft",
+  "version": "1.0.0",
+  "description": "Canvas Hair Loft website (Atelier template by Real Easy Sites)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realeasysites/canvashairloft.git"
+  },
+  "bugs": {
+    "url": "https://github.com/realeasysites/canvashairloft/issues"
+  },
+  "homepage": "https://github.com/realeasysites/canvashairloft#readme",
+  "dependencies": {
+    "better-sqlite3": "^13.2.0",
+    "express": "^4.22.3",
+    "multer": "^2.5.0",
+    "nodemailer": "^10.6.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true
+}

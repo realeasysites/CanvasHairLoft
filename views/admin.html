@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Requests</title>
+<link rel="icon" href="/img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--wall:#FBFAF8;--ink:#2D2420;--accent:#8E4E2A;--linen:#EFE7DF;--muted:#76665E;--stroke:#FCE3CE}
+*{box-sizing:border-box}body{margin:0;font:400 15px/1.5 Raleway,system-ui,sans-serif;background:var(--linen);color:var(--ink)}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.login{min-height:100vh;display:grid;place-items:center;padding:1.5rem}
+.login form{background:var(--wall);padding:2.2rem;width:min(380px,100%);display:grid;gap:1rem;text-align:center}
+.login img{height:64px;margin:0 auto .4rem}
+input[type=password]{padding:.85rem 1rem;border:1px solid #cdbfb5;border-radius:8px;width:100%}
+.btn{border:0;border-radius:999px;background:var(--accent);color:#fff;padding:.8rem 1.3rem;cursor:pointer;font-weight:500;text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid #cdbfb5}
+.btn.danger{background:transparent;color:#9B2D1F;border:1px solid #e0b7ae}
+.err{color:#9B2D1F;min-height:1.2em;margin:0}
+header{background:var(--wall);position:sticky;top:0;z-index:5;border-bottom:1px solid #e3d8cf}
+.bar{max-width:1100px;margin:auto;display:flex;align-items:center;gap:1rem;padding:.8rem 1.2rem;flex-wrap:wrap}
+.bar img{height:40px}.bar h1{font-size:1.05rem;margin:0;flex:1}
+.filters{max-width:1100px;margin:1rem auto 0;padding:0 1.2rem;display:flex;gap:.5rem;flex-wrap:wrap}
+.filters button{border:1px solid #cdbfb5;background:var(--wall);border-radius:999px;padding:.45rem .9rem;cursor:pointer}
+.filters button[aria-pressed=true]{background:var(--ink);color:var(--wall);border-color:var(--ink)}
+main{max-width:1100px;margin:auto;padding:1rem 1.2rem 3rem;display:grid;gap:1rem}
+.card{background:var(--wall);border-radius:10px;padding:1.3rem 1.4rem;display:grid;grid-template-columns:1fr 280px;gap:1.2rem 2rem}
+.card h2{margin:0;font-size:1.15rem}
+.meta{color:var(--muted);font-size:.88rem;margin:.1rem 0 .8rem}
+.tag{display:inline-block;background:var(--stroke);border-radius:999px;padding:.15rem .7rem;font-size:.82rem;font-weight:500;margin-right:.3rem}
+.tag.s-New{background:var(--accent);color:#fff}.tag.s-Booked{background:#dfe9dc}.tag.s-Not\ booked{background:#e9e4e1;color:var(--muted)}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:.25rem .9rem}dt{color:var(--muted)}dd{margin:0;white-space:pre-wrap;word-break:break-word}
+dd a{color:var(--accent)}
+.photos{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
+.photos a img{width:92px;height:92px;object-fit:cover;border-radius:6px;display:block}
+.side{display:grid;gap:.6rem;align-content:start}
+.side label{font-size:.85rem;color:var(--muted);display:grid;gap:.25rem}
+.side select,.side textarea{border:1px solid #cdbfb5;border-radius:8px;padding:.55rem .7rem;background:#fff;width:100%}
+.side textarea{min-height:80px;resize:vertical}
+.saved{font-size:.82rem;color:var(--muted);min-height:1.1em}
+.empty{background:var(--wall);border-radius:10px;padding:2.4rem;text-align:center;color:var(--muted)}
+@media(max-width:760px){.card{grid-template-columns:1fr}.bar h1{flex-basis:100%;order:3}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let data = { requests: [], statuses: [] }, filter = 'All', siteName = '';
+
+async function api(url, opt = {}) {
+  const r = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opt });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401 && url !== '/api/login') { login(); throw new Error('signed out'); }
+  if (!r.ok) throw new Error(j.error || 'Something went wrong. Refresh and try again.');
+  return j;
+}
+
+function login(msg = '') {
+  $('#app').innerHTML = `<div class="login"><form id="lf">
+    <img src="/img/logo.png" alt="${esc(siteName)}">
+    <label for="pw">Dashboard password</label>
+    <input type="password" id="pw" autocomplete="current-password" autofocus required>
+    <p class="err" id="le" role="alert">${esc(msg)}</p>
+    <button class="btn">Sign in</button></form></div>`;
+  $('#lf').onsubmit = async e => {
+    e.preventDefault();
+    try { await api('/api/login', { method: 'POST', body: JSON.stringify({ password: $('#pw').value }) }); load(); }
+    catch (err) { $('#le').textContent = err.message; }
+  };
+}
+
+async function load() {
+  data = await api('/api/requests');
+  $('#app').innerHTML = `<header><div class="bar"><img src="/img/logo.png" alt=""><h1>Requests</h1>
+      <a class="btn ghost" href="/api/requests.csv">Download CSV</a><button class="btn ghost" id="out">Sign out</button></div></header>
+    <div class="filters" id="filters"></div><main id="list"></main>`;
+  $('#out').onclick = async () => { await api('/api/logout', { method: 'POST' }); login(); };
+  draw();
+}
+
+function draw() {
+  const counts = s => data.requests.filter(r => s === 'All' || r.status === s).length;
+  $('#filters').innerHTML = ['All', ...data.statuses].map(s => `<button aria-pressed="${s === filter}" data-f="${esc(s)}">${esc(s)} (${counts(s)})</button>`).join('');
+  document.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filter = b.dataset.f; draw(); });
+  const rows = data.requests.filter(r => filter === 'All' || r.status === filter);
+  if (!rows.length) { $('#list').innerHTML = `<p class="empty">${filter === 'All' ? 'No requests yet. New ones from the website land here.' : `Nothing marked “${esc(filter)}”.`}</p>`; return; }
+  $('#list').innerHTML = rows.map(r => {
+    const when = new Date(r.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const f = [['Phone', r.phone && `<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a>`], ['Email', r.email && `<a href="mailto:${esc(r.email)}">${esc(r.email)}</a>`],
+      ['Services', esc(r.services)], ['Artist', esc(r.artist || 'No preference')], ['Client', esc(r.client_type)], ['Good times', esc(r.timing)], ['Details', esc(r.details)]].filter(x => x[1]);
+    return `<article class="card" data-id="${r.id}">
+      <div>
+        <h2>${esc(r.name)}</h2>
+        <p class="meta"><span class="tag s-${esc(r.status)}">${esc(r.status)}</span>${esc(r.kind)} · ${when}</p>
+        <dl>${f.map(x => `<dt>${x[0]}</dt><dd>${x[1]}</dd>`).join('')}</dl>
+        ${r.photos.length ? `<div class="photos">${r.photos.map(p => `<a href="/api/uploads/${esc(p)}" target="_blank" rel="noopener"><img src="/api/uploads/${esc(p)}" alt="Photo from ${esc(r.name)}" loading="lazy"></a>`).join('')}</div>` : ''}
+      </div>
+      <div class="side">
+        <label>Status<select data-status>${data.statuses.map(s => `<option ${s === r.status ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></label>
+        <label>Notes<textarea data-notes placeholder="Private notes">${esc(r.notes)}</textarea></label>
+        <span class="saved" aria-live="polite"></span>
+        <button class="btn danger" data-del>Delete request</button>
+      </div></article>`;
+  }).join('');
+  document.querySelectorAll('.card').forEach(card => {
+    const id = +card.dataset.id, r = data.requests.find(x => x.id === id), saved = card.querySelector('.saved');
+    card.querySelector('[data-status]').onchange = async e => { await api(`/api/requests/${id}`, { method: 'PATCH', body: JSON.stringify({ status: e.target.value }) }); r.status = e.target.value; draw(); };
+    let t; card.querySelector('[data-notes]').oninput = e => { clearTimeout(t); saved.textContent = ''; t = setTimeout(async () => { await api(`/api/requests/${id}`, { method: 'PATCH', body: JSON.stringify({ notes: e.target.value }) }); r.notes = e.target.value; saved.textContent = 'Notes saved'; }, 600); };
+    card.querySelector('[data-del]').onclick = async () => {
+      if (!confirm(`Delete the request from ${r.name}? Their photos are deleted too. This can't be undone.`)) return;
+      await api(`/api/requests/${id}`, { method: 'DELETE' }); data.requests = data.requests.filter(x => x.id !== id); draw();
+    };
+  });
+}
+
+fetch('/api/session').then(r => r.json()).then(s => {
+  siteName = s.name; document.title = `Requests · ${s.name}`;
+  if (!s.configured) return login('The dashboard is locked until ADMIN_PASSWORD is set on the server.');
+  s.authed ? load() : login();
+});
+</script>
+</body>
+</html>
